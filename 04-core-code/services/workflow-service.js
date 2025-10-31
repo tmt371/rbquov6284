@@ -138,4 +138,48 @@ export class WorkflowService {
     handleF1DiscountChange({ percentage }) {
         this.stateService.dispatch(uiActions.setF1DiscountPercentage(percentage));
     }
+
+    /**
+     * [NEW & MOVED] A helper method to create a deep copy of quoteData and inject the F1 panel state into it.
+     * This is the implementation of "Procedure A".
+     * @returns {object} A new quoteData object ready for saving or exporting.
+     */
+    _getQuoteDataWithF1Snapshot() {
+        const { quoteData, ui } = this.stateService.getState();
+        
+        // Create a deep copy to avoid mutating the live application state
+        const dataWithSnapshot = JSON.parse(JSON.stringify(quoteData));
+        const f1State = ui.f1;
+
+        // Populate the f1Snapshot object with the current values from the F1 UI state
+        if (dataWithSnapshot.f1Snapshot) {
+            dataWithSnapshot.f1Snapshot.remote_1ch_qty = f1State.remote_1ch_qty;
+            dataWithSnapshot.f1Snapshot.remote_16ch_qty = f1State.remote_16ch_qty;
+            dataWithSnapshot.f1Snapshot.dual_combo_qty = f1State.dual_combo_qty;
+            dataWithSnapshot.f1Snapshot.dual_slim_qty = f1State.dual_slim_qty;
+            dataWithSnapshot.f1Snapshot.discountPercentage = f1State.discountPercentage;
+        }
+        
+        return dataWithSnapshot;
+    }
+    
+    /**
+     * [NEW & MOVED] Handles the save to JSON request, now with F1 state snapshotting.
+     */
+    handleSaveToFile() {
+        const dataToSave = this._getQuoteDataWithF1Snapshot();
+        const result = this.fileService.saveToJson(dataToSave);
+        const notificationType = result.success ? 'info' : 'error';
+        this.eventAggregator.publish(EVENTS.SHOW_NOTIFICATION, { message: result.message, type: notificationType });
+    }
+
+    /**
+     * [NEW & MOVED] Handles the export to CSV request, now with F1 state snapshotting.
+     */
+    handleExportCSV() {
+        const dataToExport = this._getQuoteDataWithF1Snapshot();
+        const result = this.fileService.exportToCsv(dataToExport);
+        const notificationType = result.success ? 'info' : 'error';
+        this.eventAggregator.publish(EVENTS.SHOW_NOTIFICATION, { message: result.message, type: notificationType });
+    }
 }

@@ -129,45 +129,9 @@ export class QuickQuoteView {
         this.focusService.focusAfterCommit();
     }
 
-    /**
-     * [NEW] A helper method to create a deep copy of quoteData and inject the F1 panel state into it.
-     * This is the implementation of "Procedure A".
-     * @returns {object} A new quoteData object ready for saving or exporting.
-     */
-    _getQuoteDataWithF1Snapshot() {
-        const { quoteData, ui } = this.stateService.getState();
-        
-        // Create a deep copy to avoid mutating the live application state
-        const dataWithSnapshot = JSON.parse(JSON.stringify(quoteData));
-        const f1State = ui.f1;
-
-        // Populate the f1Snapshot object with the current values from the F1 UI state
-        if (dataWithSnapshot.f1Snapshot) {
-            dataWithSnapshot.f1Snapshot.remote_1ch_qty = f1State.remote_1ch_qty;
-            dataWithSnapshot.f1Snapshot.remote_16ch_qty = f1State.remote_16ch_qty;
-            dataWithSnapshot.f1Snapshot.dual_combo_qty = f1State.dual_combo_qty;
-            dataWithSnapshot.f1Snapshot.dual_slim_qty = f1State.dual_slim_qty;
-            dataWithSnapshot.f1Snapshot.discountPercentage = f1State.discountPercentage;
-        }
-        
-        return dataWithSnapshot;
-    }
-
-    handleSaveToFile() {
-        // [MODIFIED] Use the helper method to get the data with the F1 snapshot.
-        const dataToSave = this._getQuoteDataWithF1Snapshot();
-        const result = this.fileService.saveToJson(dataToSave);
-        const notificationType = result.success ? 'info' : 'error';
-        this.eventAggregator.publish(EVENTS.SHOW_NOTIFICATION, { message: result.message, type: notificationType });
-    }
-
-    handleExportCSV() {
-        // [MODIFIED] Use the helper method to get the data with the F1 snapshot.
-        const dataToExport = this._getQuoteDataWithF1Snapshot();
-        const result = this.fileService.exportToCsv(dataToExport);
-        const notificationType = result.success ? 'info' : 'error';
-        this.eventAggregator.publish(EVENTS.SHOW_NOTIFICATION, { message: result.message, type: notificationType });
-    }
+    // [MOVED] _getQuoteDataWithF1Snapshot has been moved to workflow-service.js
+    // [MOVED] handleSaveToFile has been moved to workflow-service.js
+    // [MOVED] handleExportCSV has been moved to workflow-service.js
 
     handleReset() {
         if (window.confirm("This will clear all data. Are you sure?")) {
