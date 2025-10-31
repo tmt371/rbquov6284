@@ -21,10 +21,9 @@ export class AppController {
     initialize() {
         this._subscribeQuickQuoteEvents();
         this._subscribeDetailViewEvents();
-        this._subscribeWorkflowEvents();
+        this._subscribeWorkflowEvents(); // [MODIFIED] Renamed from _subscribeGlobalEvents
         this._subscribeF1Events();
         this._subscribeF3Events();
-        this._subscribeF4Events(); // [NEW] Added dedicated subscription for F4 actions
 
         // This is the core of the reactive state update.
         // Any service that updates the state via StateService will trigger this,
@@ -42,7 +41,9 @@ export class AppController {
         this.eventAggregator.subscribe(EVENTS.NUMERIC_KEY_PRESSED, (data) => delegate('handleNumericKeyPress', data));
         this.eventAggregator.subscribe(EVENTS.USER_REQUESTED_INSERT_ROW, () => delegate('handleInsertRow'));
         this.eventAggregator.subscribe(EVENTS.USER_REQUESTED_DELETE_ROW, () => delegate('handleDeleteRow'));
-        // [MOVED] All F4 actions are now handled in _subscribeF4Events
+        // [MOVED] USER_REQUESTED_SAVE is now handled by WorkflowService
+        // [MOVED] USER_REQUESTED_EXPORT_CSV is now handled by WorkflowService
+        this.eventAggregator.subscribe(EVENTS.USER_REQUESTED_RESET, () => delegate('handleReset'));
         this.eventAggregator.subscribe(EVENTS.USER_REQUESTED_CLEAR_ROW, () => delegate('handleClearRow'));
         this.eventAggregator.subscribe(EVENTS.USER_MOVED_ACTIVE_CELL, (data) => delegate('handleMoveActiveCell', data));
         this.eventAggregator.subscribe(EVENTS.USER_REQUESTED_CYCLE_TYPE, () => delegate('handleCycleType'));
@@ -95,12 +96,17 @@ export class AppController {
         this.eventAggregator.subscribe(EVENTS.ACCESSORY_COUNTER_CHANGED, (data) => delegate('handleAccessoryCounterChange', data));
     }
 
-    _subscribeWorkflowEvents() {
+    _subscribeWorkflowEvents() { // [MODIFIED] Renamed and now includes Save/Export
         this.eventAggregator.subscribe(EVENTS.USER_NAVIGATED_TO_DETAIL_VIEW, () => this.workflowService.handleNavigationToDetailView());
         this.eventAggregator.subscribe(EVENTS.USER_NAVIGATED_TO_QUICK_QUOTE_VIEW, () => this.workflowService.handleNavigationToQuickQuoteView());
         this.eventAggregator.subscribe(EVENTS.USER_SWITCHED_TAB, (data) => this.workflowService.handleTabSwitch(data));
+        this.eventAggregator.subscribe(EVENTS.USER_REQUESTED_LOAD, () => this.workflowService.handleUserRequestedLoad());
         this.eventAggregator.subscribe(EVENTS.USER_CHOSE_LOAD_DIRECTLY, () => this.workflowService.handleLoadDirectly());
         this.eventAggregator.subscribe(EVENTS.FILE_LOADED, (data) => this.workflowService.handleFileLoad(data));
+        
+        // [NEW & MOVED] Save and Export events are now correctly delegated to the WorkflowService
+        this.eventAggregator.subscribe(EVENTS.USER_REQUESTED_SAVE, () => this.workflowService.handleSaveToFile());
+        this.eventAggregator.subscribe(EVENTS.USER_REQUESTED_EXPORT_CSV, () => this.workflowService.handleExportCSV());
     }
 
     _subscribeF1Events() {
@@ -110,14 +116,6 @@ export class AppController {
 
     _subscribeF3Events() {
         this.eventAggregator.subscribe(EVENTS.USER_REQUESTED_PRINTABLE_QUOTE, () => this.workflowService.handlePrintableQuoteRequest());
-    }
-
-    // [NEW] Centralizes all F4 actions and correctly delegates them to the WorkflowService.
-    _subscribeF4Events() {
-        this.eventAggregator.subscribe(EVENTS.USER_REQUESTED_SAVE, () => this.workflowService.handleSaveToFile());
-        this.eventAggregator.subscribe(EVENTS.USER_REQUESTED_EXPORT_CSV, () => this.workflowService.handleExportCSV());
-        this.eventAggregator.subscribe(EVENTS.USER_REQUESTED_LOAD, () => this.workflowService.handleUserRequestedLoad());
-        this.eventAggregator.subscribe(EVENTS.USER_REQUESTED_RESET, () => this.workflowService.handleReset());
     }
 
     // This is a special method used by AppContext to publish state, it needs access to stateService.
