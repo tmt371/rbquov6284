@@ -121,6 +121,14 @@ export const initialState = {
             address: "",
             phone: "",
             email: ""
+        },
+        // [NEW] A new container for F1 panel state that needs to be saved.
+        f1Snapshot: {
+            remote_1ch_qty: null,
+            remote_16ch_qty: null,
+            dual_combo_qty: null,
+            dual_slim_qty: null,
+            discountPercentage: null
         }
     }
 };
