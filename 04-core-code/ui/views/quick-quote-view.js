@@ -132,14 +132,7 @@ export class QuickQuoteView {
     // [MOVED] _getQuoteDataWithF1Snapshot has been moved to workflow-service.js
     // [MOVED] handleSaveToFile has been moved to workflow-service.js
     // [MOVED] handleExportCSV has been moved to workflow-service.js
-
-    handleReset() {
-        if (window.confirm("This will clear all data. Are you sure?")) {
-            this.stateService.dispatch(quoteActions.resetQuoteData());
-            this.stateService.dispatch(uiActions.resetUi());
-            this.eventAggregator.publish(EVENTS.SHOW_NOTIFICATION, { message: 'Quote has been reset.' });
-        }
-    }
+    // [MOVED] handleReset has been moved to workflow-service.js
 
     handleClearRow() {
         const { ui } = this.stateService.getState();
@@ -302,7 +295,8 @@ export class QuickQuoteView {
     }
 
     handleSaveThenLoad() {
-        this.handleSaveToFile();
+        // [MODIFIED] Instead of calling a local method, publish the global event.
+        this.eventAggregator.publish(EVENTS.USER_REQUESTED_SAVE);
         this.eventAggregator.publish(EVENTS.TRIGGER_FILE_LOAD);
     }
 }

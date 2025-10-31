@@ -18,8 +18,8 @@ export class WorkflowService {
         this.calculationService = calculationService;
         this.productFactory = productFactory;
         this.detailConfigView = detailConfigView;
-        this.quoteGeneratorService = quoteGeneratorService; // [NEW] Store the injected service
-        this.quotePreviewComponent = null; // Will be set by AppContext
+        this.quoteGeneratorService = quoteGeneratorService;
+        this.quotePreviewComponent = null; 
 
         console.log("WorkflowService Initialized.");
     }
@@ -33,13 +33,9 @@ export class WorkflowService {
             const { quoteData, ui } = this.stateService.getState();
             const f3Data = this._getF3OverrideData();
 
-            // [REFACTORED] Delegate the entire HTML generation process to the new service.
             const finalHtml = this.quoteGeneratorService.generateQuoteHtml(quoteData, ui, f3Data);
 
             if (finalHtml) {
-                // [MODIFIED] Phase 2: Replace the old iframe event with the new window.open mechanism.
-                // this.eventAggregator.publish(EVENTS.SHOW_QUOTE_PREVIEW, finalHtml);
-
                 const blob = new Blob([finalHtml], { type: 'text/html' });
                 const url = URL.createObjectURL(blob);
                 window.open(url, '_blank');
@@ -68,13 +64,10 @@ export class WorkflowService {
             customerPhone: getValue('f3-customer-phone'),
             customerEmail: getValue('f3-customer-email'),
             finalOfferPrice: getValue('f3-final-offer-price'),
-            // [MODIFIED] Add the missing generalNotes field to be collected
             generalNotes: getValue('f3-general-notes'),
             termsConditions: getValue('f3-terms-conditions'),
         };
     }
-
-    // [REMOVED] Methods handleRemoteDistribution and handleDualDistribution have been moved to F1CostView.
 
     handleF1TabActivation() {
         const { quoteData } = this.stateService.getState();
@@ -83,8 +76,6 @@ export class WorkflowService {
 
         this.stateService.dispatch(quoteActions.setQuoteData(updatedQuoteData));
     }
-
-    // [REMOVED] All F2-related methods have been moved to F2SummaryView.
 
     handleNavigationToDetailView() {
         const { ui } = this.stateService.getState();
@@ -140,18 +131,16 @@ export class WorkflowService {
     }
 
     /**
-     * [NEW & MOVED] A helper method to create a deep copy of quoteData and inject the F1 panel state into it.
+     * [NEW] A helper method to create a deep copy of quoteData and inject the F1 panel state into it.
      * This is the implementation of "Procedure A".
      * @returns {object} A new quoteData object ready for saving or exporting.
      */
     _getQuoteDataWithF1Snapshot() {
         const { quoteData, ui } = this.stateService.getState();
         
-        // Create a deep copy to avoid mutating the live application state
         const dataWithSnapshot = JSON.parse(JSON.stringify(quoteData));
         const f1State = ui.f1;
 
-        // Populate the f1Snapshot object with the current values from the F1 UI state
         if (dataWithSnapshot.f1Snapshot) {
             dataWithSnapshot.f1Snapshot.remote_1ch_qty = f1State.remote_1ch_qty;
             dataWithSnapshot.f1Snapshot.remote_16ch_qty = f1State.remote_16ch_qty;
@@ -181,5 +170,16 @@ export class WorkflowService {
         const result = this.fileService.exportToCsv(dataToExport);
         const notificationType = result.success ? 'info' : 'error';
         this.eventAggregator.publish(EVENTS.SHOW_NOTIFICATION, { message: result.message, type: notificationType });
+    }
+
+    /**
+     * [NEW & MOVED] Handles the reset request.
+     */
+    handleReset() {
+        if (window.confirm("This will clear all data. Are you sure?")) {
+            this.stateService.dispatch(quoteActions.resetQuoteData());
+            this.stateService.dispatch(uiActions.resetUi());
+            this.eventAggregator.publish(EVENTS.SHOW_NOTIFICATION, { message: 'Quote has been reset.' });
+        }
     }
 }
