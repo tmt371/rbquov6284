@@ -213,7 +213,8 @@ export class CalculationService {
         const deliveryQty = f2State.deliveryQty || 0;
         const installQty = f2State.installQty || 0;
         const removalQty = f2State.removalQty || 0;
-        const mulTimes = f2State.mulTimes || 0;
+        // [FIX] Correct the logic for mulTimes. If it's null or undefined, default to 1.
+        const mulTimes = (f2State.mulTimes === null || f2State.mulTimes === undefined) ? 1 : f2State.mulTimes;
         const discount = f2State.discount || 0;
 
         const wifiSum = wifiQty * UNIT_PRICES.wifi;
