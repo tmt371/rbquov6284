@@ -213,7 +213,7 @@ export class CalculationService {
         const deliveryQty = f2State.deliveryQty || 0;
         const installQty = f2State.installQty || 0;
         const removalQty = f2State.removalQty || 0;
-        const mulTimes = (f2State.mulTimes === null || f2State.mulTimes === undefined) ? 1 : f2State.mulTimes;
+        const mulTimes = f2State.mulTimes || 0;
         const discount = f2State.discount || 0;
 
         const wifiSum = wifiQty * UNIT_PRICES.wifi;
@@ -269,6 +269,7 @@ export class CalculationService {
         const validItemCount = items.filter(item => typeof item.linePrice === 'number' && item.linePrice > 0).length;
         const singleprofit = validItemCount > 0 ? rbProfit / validItemCount : 0;
 
+        // [MODIFIED] Corrected sumProfit and netProfit calculation
         const sumProfit = sumPrice - f1SubTotal;
         const gst = sumPrice * 1.1; // Correctly calculate the total including GST
         const netProfit = gst - f1_final_total;
@@ -279,8 +280,8 @@ export class CalculationService {
             deliveryFee,
             installFee,
             removalFee,
-            acceSum,
-            eAcceSum,
+            acceSum, // [FIX] Added missing acceSum
+            eAcceSum, // [FIX] Added missing eAcceSum
             firstRbPrice,
             disRbPrice,
             sumPrice,
@@ -288,8 +289,7 @@ export class CalculationService {
             singleprofit,
             sumProfit,
             gst,
-            netProfit,
-            mulTimes // [FIX] Add mulTimes to the return object so its value can be persisted.
+            netProfit
         };
     }
 

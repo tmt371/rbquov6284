@@ -129,9 +129,19 @@ export class QuickQuoteView {
         this.focusService.focusAfterCommit();
     }
 
-    // [MOVED] _getQuoteDataWithF1Snapshot has been moved to workflow-service.js
-    // [MOVED] handleSaveToFile has been moved to workflow-service.js
-    // [MOVED] handleExportCSV has been moved to workflow-service.js
+    handleSaveToFile() {
+        const { quoteData } = this.stateService.getState();
+        const result = this.fileService.saveToJson(quoteData);
+        const notificationType = result.success ? 'info' : 'error';
+        this.eventAggregator.publish(EVENTS.SHOW_NOTIFICATION, { message: result.message, type: notificationType });
+    }
+
+    handleExportCSV() {
+        const { quoteData } = this.stateService.getState();
+        const result = this.fileService.exportToCsv(quoteData);
+        const notificationType = result.success ? 'info' : 'error';
+        this.eventAggregator.publish(EVENTS.SHOW_NOTIFICATION, { message: result.message, type: notificationType });
+    }
 
     handleReset() {
         if (window.confirm("This will clear all data. Are you sure?")) {

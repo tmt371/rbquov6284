@@ -21,7 +21,7 @@ export class AppController {
     initialize() {
         this._subscribeQuickQuoteEvents();
         this._subscribeDetailViewEvents();
-        this._subscribeWorkflowEvents(); // [MODIFIED] Renamed from _subscribeGlobalEvents
+        this._subscribeGlobalEvents();
         this._subscribeF1Events();
         this._subscribeF3Events();
 
@@ -41,8 +41,8 @@ export class AppController {
         this.eventAggregator.subscribe(EVENTS.NUMERIC_KEY_PRESSED, (data) => delegate('handleNumericKeyPress', data));
         this.eventAggregator.subscribe(EVENTS.USER_REQUESTED_INSERT_ROW, () => delegate('handleInsertRow'));
         this.eventAggregator.subscribe(EVENTS.USER_REQUESTED_DELETE_ROW, () => delegate('handleDeleteRow'));
-        // [MOVED] USER_REQUESTED_SAVE is now handled by WorkflowService
-        // [MOVED] USER_REQUESTED_EXPORT_CSV is now handled by WorkflowService
+        this.eventAggregator.subscribe(EVENTS.USER_REQUESTED_SAVE, () => delegate('handleSaveToFile'));
+        this.eventAggregator.subscribe(EVENTS.USER_REQUESTED_EXPORT_CSV, () => delegate('handleExportCSV'));
         this.eventAggregator.subscribe(EVENTS.USER_REQUESTED_RESET, () => delegate('handleReset'));
         this.eventAggregator.subscribe(EVENTS.USER_REQUESTED_CLEAR_ROW, () => delegate('handleClearRow'));
         this.eventAggregator.subscribe(EVENTS.USER_MOVED_ACTIVE_CELL, (data) => delegate('handleMoveActiveCell', data));
@@ -96,17 +96,13 @@ export class AppController {
         this.eventAggregator.subscribe(EVENTS.ACCESSORY_COUNTER_CHANGED, (data) => delegate('handleAccessoryCounterChange', data));
     }
 
-    _subscribeWorkflowEvents() { // [MODIFIED] Renamed and now includes Save/Export
+    _subscribeGlobalEvents() {
         this.eventAggregator.subscribe(EVENTS.USER_NAVIGATED_TO_DETAIL_VIEW, () => this.workflowService.handleNavigationToDetailView());
         this.eventAggregator.subscribe(EVENTS.USER_NAVIGATED_TO_QUICK_QUOTE_VIEW, () => this.workflowService.handleNavigationToQuickQuoteView());
         this.eventAggregator.subscribe(EVENTS.USER_SWITCHED_TAB, (data) => this.workflowService.handleTabSwitch(data));
         this.eventAggregator.subscribe(EVENTS.USER_REQUESTED_LOAD, () => this.workflowService.handleUserRequestedLoad());
         this.eventAggregator.subscribe(EVENTS.USER_CHOSE_LOAD_DIRECTLY, () => this.workflowService.handleLoadDirectly());
         this.eventAggregator.subscribe(EVENTS.FILE_LOADED, (data) => this.workflowService.handleFileLoad(data));
-        
-        // [NEW & MOVED] Save and Export events are now correctly delegated to the WorkflowService
-        this.eventAggregator.subscribe(EVENTS.USER_REQUESTED_SAVE, () => this.workflowService.handleSaveToFile());
-        this.eventAggregator.subscribe(EVENTS.USER_REQUESTED_EXPORT_CSV, () => this.workflowService.handleExportCSV());
     }
 
     _subscribeF1Events() {
